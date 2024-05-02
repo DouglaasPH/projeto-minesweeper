@@ -1,0 +1,63 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
+
+.body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.grade {
+    border: 10px solid #dcd6bc;
+    background-color: #dcd6bc;
+    width: 400px;
+    height: 400px;
+    margin-left: 50px;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+* {
+    font-family: "Roboto", sans-serif;
+    font-weight: 500;
+    font-style: normal;
+    font-size: 40px;
+}
+
+.vazio,
+.bomba {
+    border: 4px solid;
+    border-color: #f5f3eb #bab7a9 #bab7a9 #fff9db;
+    width: 40px;
+    height: 40px;
+    box-sizing: border-box;
+    font-size: 22px;
+    align-items: center;
+}
+
+.checado {
+    border: #9c998d;
+}
+
+.um {
+    border: none;
+    color: blue;
+    text-align: center;
+    font-size: 35px;
+}
+
+.dois {
+    border: none;
+    color: red;
+    text-align: center;
+    font-size: 35px;
+}
+
+.tres {
+    border: none;
+    color: green;
+    text-align: center;
+    font-size: 35px;
+}
