@@ -1,151 +1,173 @@
-const grade = document.querySelector(".grade");
-const bandeirasDisponiveis = document.querySelector(".quantidade-de-bandeira");
-const resultado = document.querySelector(".resultado");
-const largura = 10;
-const bombas = 20;
-const vazio = 80;
+var bandeirasRestantes = document.querySelector(".quantidade-de-bandeira");
+var grade = document.querySelector(".grade");
+var resultado = document.querySelector(".resultado");
+var largura = 10;
+var quantidadeDeBombas = 20;
 var quantidadeDeBandeiras = 20;
-bandeirasDisponiveis.innerHTML = quantidadeDeBandeiras;
-var total = 0;
+var quadrados = [];
+var quadradosComBandeiras = [];
+var acabouOJogo = false;
+var acertosDeBombas = 0;
 
-function criarValidoEBombaParaDivs() {
-    const emptyBomba = Array(bombas).fill("bomba");
-    const emptyValido = Array(vazio).fill("vazio");
-    const embaralhar = emptyValido.concat(emptyBomba);
-    var embaralhado = embaralhar.sort(() => Math.random() - 0.5); 
-    
+function criarQuadrados() {
+    bandeirasRestantes.innerHTML = quantidadeDeBandeiras;
+
+    //Misturar ordem de bombas e vazios dos quadrados
+    const arrayBomba = Array(quantidadeDeBombas).fill("bomba")
+    const arrayVazio = Array(largura * largura - quantidadeDeBombas).fill("vazio");
+    let juntarArrays = arrayVazio.concat(arrayBomba);
+    const misturarArrays = juntarArrays.sort(() => Math.random() - 0.5);
+
     for (let i = 0; i < largura * largura; i++) {
         const quadrado = document.createElement("div");
         quadrado.id = i;
-        quadrado.classList.add(embaralhado[i])
+        quadrado.classList.add(misturarArrays[i]);
         grade.appendChild(quadrado);
+        quadrados.push(quadrado);
+
+        quadrado.addEventListener("click", function () {
+            click(quadrado)
+        });
+        quadrado.addEventListener("contextmenu", function () {
+            event.preventDefault(); // cancelar aparecimento de aba
+            contextMenu(quadrado);
+        })
     }
 
-    for (let i = 0; i < largura * largura; i++) {
-        let quadrado = document.querySelectorAll(".grade > div");
-        let acumulador = 0;
-        let estaNoSuperior = false;
-        let estaNoInferior = false;
-        const blocos = { 
-            esquerda: [0, 10, 20, 30, 40, 50, 60, 70, 80, 90],
-            direita: [9, 19, 29, 39, 49, 59, 69, 79, 89, 99]
-        }
-
-        if (i <= 9) estaNoSuperior = true;
-        if (i > 89 && i <= 99) estaNoInferior = true;
-
-        if (i !== 99 && !blocos.direita.includes(i)) { 
-            if (quadrado[i + 1].classList.contains("bomba")) acumulador++;
-        };
-        if (i > 0 && !blocos.esquerda.includes(i)) {
-            if (quadrado[i - 1].classList.contains("bomba")) acumulador++;
-        };
-        if (i < 90) {
-            if (quadrado[i + 10].classList.contains("bomba")) acumulador++;
-        };
-        if (i >= 10) {
-            if (quadrado[i - 10].classList.contains("bomba")) acumulador++;
-        };
-        if (i <= 88 && !blocos.esquerda.includes[i] && !blocos.direita.includes[i]) {
-            if (quadrado[i + 11].classList.contains("bomba")) acumulador++;
-        };
-        if (i >= 11 && !blocos.esquerda.includes[i] && !blocos.direita.includes[i]) {
-            if (quadrado[i - 11].classList.contains("bomba")) acumulador++;
-        };
-        if (i <= 90 && !blocos.esquerda.includes[i] && !blocos.direita.includes[i]) {
-            if (quadrado[i + 9].classList.contains("bomba")) acumulador++;
-        };
-        if (i >= 9 && !blocos.esquerda.includes[i] && !blocos.direita.includes[i]) {
-            if (quadrado[i - 9].classList.contains("bomba")) acumulador++;
-        };
-
-        if (acumulador > 3) {
-            quadrado[i].setAttribute("quantidade-de-bombas-ao-redor", 3)
-            quadrado[i].setAttribute("visto", false)
-        } else {
-            quadrado[i].setAttribute("quantidade-de-bombas-ao-redor", acumulador)
-            quadrado[i].setAttribute("visto", false)
+    for (let i = 0; i < quadrados.length; i++) {
+        let total = 0;
+        const eaBordaEsquerda = (i % largura === 0);
+        const eaBordaDireita = (i % largura === largura - 1);
+        if (quadrados[i].classList.contains("vazio")) {
+            if (i > 0 && !eaBordaEsquerda && quadrados[i - 1].classList.contains("bomba")) total++
+            if (i > 9 && !eaBordaDireita && quadrados[i + 1 - largura].classList.contains("bomba")) total++;
+            if (i > 10 && quadrados[i - largura].classList.contains("bomba")) total++;
+            if (i > 11 && !eaBordaEsquerda && quadrados[i - largura - 1].classList.contains("bomba")) total++;
+            if (i < 99 && !eaBordaDireita && quadrados[i + 1].classList.contains("bomba")) total++;
+            if (i < 81 && !eaBordaEsquerda && quadrados[i - 1 + largura].classList.contains("bomba")) total++;
+            if (i < 88 && !eaBordaDireita && quadrados[i + 1 + largura].classList.contains("bomba")) total++;
+            if (i < 89 && quadrados[i + largura].classList.contains("bomba")) total++;
+            quadrados[i].setAttribute("data", total);
         }
     }
 
 }
 
-criarValidoEBombaParaDivs();
 
-function divEventos() {
-    let quadrado = document.querySelectorAll("div > div")
+criarQuadrados();
 
-    for (let i = 0; i < largura * largura; i++) {
-        quadrado[i].addEventListener("click", tratamentoParaClickEsquerdo);
-        quadrado[i].addEventListener("contextmenu", tratamentoParaClickDireito);
+function click(quadrado) {
+    if (acabouOJogo || quadrado.classList.contains("checado") || quadrado.classList.contains("bandeira")) return;
+
+    if (quadrado.classList.contains("bomba")) {
+        gameOver(quadrado)
+    } else {
+        let total = quadrado.getAttribute("data");
+        if (total != 0) {
+            quadrado.classList.add("checado");
+            if (total == 1) quadrado.classList.add("one");
+            if (total == 2) quadrado.classList.add("two");
+            if (total == 3) quadrado.classList.add("three");
+            if (total == 4) quadrado.classList.add("four");
+            quadrado.innerHTML = total;
+        } else checarQuadrado(quadrado);
+        quadrado.classList.add("checado");
     }
-    
-    function removerEventoMaisAparecerBombas() {
-        for (let i = 0; i < quadrado.length; i++) {
-            quadrado[i].removeEventListener("click", tratamentoParaClickEsquerdo)
-            quadrado[i].removeEventListener("contextmenu", tratamentoParaClickEsquerdo)
-        }
+}
 
-        for (let i = 0; i < quadrado.length; i++) {
-            if (quadrado[i].classList.contains("bomba")) {
-                quadrado[i].innerHTML = "💣";
-            }
-        }
-    }
-    
-    function tratamentoParaClickEsquerdo(event) {
-        let quadradoAtual = event.target.id;
-
-        //TODO adicionar descobrimento das div's zero
-
-        if (!quadrado[quadradoAtual].classList.contains("bomba") && quadrado[quadradoAtual].getAttribute("quantidade-de-bombas-ao-redor") == 1) {
-            quadrado[quadradoAtual].classList.add("um")
-            quadrado[quadradoAtual].innerHTML = "1";
-            quadrado[quadradoAtual].setAttribute("visto", true)
-        } else if (!quadrado[quadradoAtual].classList.contains("bomba") && quadrado[quadradoAtual].getAttribute("quantidade-de-bombas-ao-redor") == 2) {
-            quadrado[quadradoAtual].classList.add("dois")
-            quadrado[quadradoAtual].innerHTML = "2";
-            quadrado[quadradoAtual].setAttribute("visto", true)
-        } else if (!quadrado[quadradoAtual].classList.contains("bomba") && quadrado[quadradoAtual].getAttribute("quantidade-de-bombas-ao-redor") == 3) {
-            quadrado[quadradoAtual].classList.add("tres")
-            quadrado[quadradoAtual].innerHTML = "3";
-            quadrado[quadradoAtual].setAttribute("visto", true)
-        } else if (quadrado[quadradoAtual].classList.contains("bomba")) {
-            removerEventoMaisAparecerBombas();
-            
-            setTimeout(() => {
-                alert("Você perdeu!")
-            }, 500);
-        }
-    }
-
-    function tratamentoParaClickDireito(event) {
-        //Cancelar aparecimento de aba | Comportamento padrão de site desativado
-        event.preventDefault();
-        let quadradoAtual = event.target.id;
-
-        if (!quadrado[quadradoAtual].innerHTML.includes("🚩")) {
-            if (quantidadeDeBandeiras > 0) {
-                quadrado[quadradoAtual].innerHTML = "🚩";
-                quantidadeDeBandeiras = quantidadeDeBandeiras - 1;
-                bandeirasDisponiveis.innerHTML = quantidadeDeBandeiras;
+function contextMenu(quadrado) {
+    if (quadrado.classList.contains("bandeira")) {
+        quantidadeDeBandeiras++;
+        bandeirasRestantes.innerHTML = quantidadeDeBandeiras;
+        quadrado.innerHTML = "";
+        quadrado.classList.remove("bandeira")
+        quadradosComBandeiras.filter(function(quadradoPosicao) {
+            if (quadradoPosicao === quadrado) {
+                const index = quadradosComBandeiras.indexOf(quadradoPosicao);
+                quadradosComBandeiras.splice(index, 1)
             } else return;
-        }
+        })
+    } else {
+        if (quantidadeDeBandeiras != 0 && !quadrado.classList.contains("checado")) {
+            quantidadeDeBandeiras--;
+            bandeirasRestantes.innerHTML = quantidadeDeBandeiras;
+            quadrado.innerHTML = "🚩";
+            quadrado.classList.add("bandeira");
+            quadradosComBandeiras.push(quadrado);
+        } else return;
+    }
 
-        if (quantidadeDeBandeiras === 0) {
-            let quantidadeDeVistos = 0;
-
-            for (let i = 0; i < quadrado.length; i++) {
-                if (quadrado[i].getAttribute("visto") === "true") {
-                    quantidadeDeVistos++;
-                }
-            }
-
-            //TODO adicionar funcionalidade para se o jogador tiver descoberto as oitenta div's vazias e acertado as vinte div's com bomba
-
-            //TODO adicionar funcionalidade para vitória, caso o jogador acerte todos as bandeiras e, continuidade para caso ele não tenha acertado todas as bandeiras
+    if (quantidadeDeBandeiras === 0) {
+        quadradosComBandeiras.forEach(function (quadrado, indice) {
+            if (quadrado.classList.contains("bomba")) {
+                acertosDeBombas++;
+            } else return;
+        });
+        if (acertosDeBombas === 20) {
+            resultado.innerHTML = "Parabéns, Você ganhou!"
+            acabouOJogo = true;
         }
     }
+};
+    
+function checarQuadrado(quadrado) {
+    const idAtual = quadrado.id;
+    const eaBordaEsquerda = (idAtual % largura === 0);
+    const eaBordaDireita = (idAtual % largura === largura - 1);
+    setTimeout(() => {
+        if (idAtual > 0 && !eaBordaEsquerda) {
+            const novoId = parseInt(idAtual) - 1;
+            const novoQuadrado = document.getElementById(novoId);
+            click(novoQuadrado);
+        }
+        if (idAtual >= 0 && !eaBordaDireita) {
+            const novoId = parseInt(idAtual) + 1;
+            const novoQuadrado = document.getElementById(novoId);
+            click(novoQuadrado);
+        }
+        if (idAtual > 10) {
+            const novoId = parseInt(idAtual) - largura;
+            const novoQuadrado = document.getElementById(novoId);
+            click(novoQuadrado);
+        }
+        if (idAtual > 11 && !eaBordaEsquerda) {
+            const novoId = parseInt(idAtual) - 1 - largura;
+            const novoQuadrado = document.getElementById(novoId);
+            click(novoQuadrado);
+        }
+        if (idAtual > 81 /*98*/ && !eaBordaDireita) {
+            const novoId = parseInt(idAtual) + 1;
+            const novoQuadrado = document.getElementById(novoId);
+            click(novoQuadrado);
+        }
+        if (idAtual > 90 && !eaBordaEsquerda) {
+            const novoId = parseInt(idAtual) - 1 + largura;
+            const novoQuadrado = document.getElementById(novoId);
+            click(novoQuadrado);
+        }
+        if (idAtual > 88 && !eaBordaDireita) {
+            const novoId = parseInt(idAtual) + 1 + largura;
+            const novoQuadrado = document.getElementById(novoId);
+            click(novoQuadrado);
+        }
+        if (idAtual >= 0 && idAtual < 89) {
+            const novoId = parseInt(idAtual) + largura;
+            const novoQuadrado = document.getElementById(novoId);
+            click(novoQuadrado);
+        }
+    }, 10);
 }
+    
 
-divEventos();
+function gameOver(quadrado) {
+    resultado.innerHTML = "Fim de Jogo!";
+    acabouOJogo = true;
+
+    quadrados.forEach(function (quadrado) {
+        if (quadrado.classList.contains("bomba")) {
+            quadrado.innerHTML = "💣";
+            quadrado.classList.remove("bomba");
+            quadrado.classList.add("checado");
+        }
+    })
+}

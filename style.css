@@ -26,38 +26,54 @@
     font-size: 40px;
 }
 
-.vazio,
-.bomba {
-    border: 4px solid;
-    border-color: #f5f3eb #bab7a9 #bab7a9 #fff9db;
+.grade div {
+    font-size: 25px;
+    text-align: center;
     width: 40px;
     height: 40px;
     box-sizing: border-box;
-    font-size: 22px;
-    align-items: center;
+}
+
+.vazio,
+.bomba {
+    width: 40px;
+    height: 40px;
+    border: 5px solid;
+    border-color: #f5f3eb #bab7a9 #bab7a9 #fff9db;
+    box-sizing: border-box;
 }
 
 .checado {
-    border: #9c998d;
+    width: 40px;
+    height: 40px;
+    border: 2px solid #9c998d;
+    box-sizing: border-box;
 }
 
-.um {
-    border: none;
-    color: blue;
-    text-align: center;
-    font-size: 35px;
-}
-
-.dois {
-    border: none;
+.one {
     color: red;
-    text-align: center;
-    font-size: 35px;
+    border: 5px solid;
+    border-color: #f5f3eb #bab7a9 #bab7a9 #fff9db;
 }
 
-.tres {
-    border: none;
+.two {
+    color: blue;
+    border: 5px solid;
+    border-color: #f5f3eb #bab7a9 #bab7a9 #fff9db;
+}
+
+.three {
     color: green;
-    text-align: center;
-    font-size: 35px;
+    border: 5px solid;
+    border-color: #f5f3eb #bab7a9 #bab7a9 #fff9db;
+}
+
+.four {
+    color: purple;
+    border: 5px solid;
+    border-color: #f5f3eb #bab7a9 #bab7a9 #fff9db;
+}
+
+.grade>.bandeira {
+    font-size: 20px;
 }
